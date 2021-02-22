@@ -20,6 +20,8 @@
  import androidx.core.content.ContextCompat
  import androidx.lifecycle.lifecycleScope
  import com.example.ta_mask_detection.ml.FaceMaskDetection
+ import com.google.ar.sceneform.rendering.ModelRenderable
+ import com.google.ar.sceneform.ux.ArFragment
  import com.google.common.util.concurrent.ListenableFuture
  import kotlinx.android.synthetic.main.activity_main.*
  import kotlinx.coroutines.Dispatchers
@@ -43,10 +45,13 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
     private var camera: Camera? = null
     private lateinit var cameraExecutor: ExecutorService
+    private val covidObj: ModelRenderable? = null
+    lateinit var arFragment: ArFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        setContentView(R.layout.activity_main)
+        
 
         setupML()
         setupCameraThread()
@@ -231,6 +236,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
                         ContextCompat.getColor(
                                 applicationContext,
                                 if(category.label=="without_mask") R.color.red else R.color.green
+                        //show 3d model
                         )
                 )
                 overlay.background = getDrawable(
