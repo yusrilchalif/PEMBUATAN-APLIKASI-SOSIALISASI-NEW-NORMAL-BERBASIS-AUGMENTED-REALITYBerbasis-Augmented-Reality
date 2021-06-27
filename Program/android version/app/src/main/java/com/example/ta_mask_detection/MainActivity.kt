@@ -1,61 +1,63 @@
- package com.example.ta_mask_detection
+package com.example.ta_mask_detection
 
- import android.Manifest
- import android.annotation.SuppressLint
- import android.content.Context
- import android.content.pm.PackageManager
- import android.content.res.Configuration
- import android.graphics.Bitmap
- import android.graphics.Matrix
- import android.media.Image
- import android.os.Bundle
- import android.util.DisplayMetrics
- import android.util.Log
- import android.widget.Toast
- import androidx.appcompat.app.AppCompatActivity
- import androidx.appcompat.content.res.AppCompatResources
- import androidx.camera.core.*
- import androidx.camera.lifecycle.ProcessCameraProvider
- import androidx.core.app.ActivityCompat
- import androidx.core.content.ContextCompat
- import androidx.lifecycle.lifecycleScope
- import com.example.ta_mask_detection.ml.FaceMaskDetection
- import com.google.ar.sceneform.rendering.ModelRenderable
- import com.google.ar.sceneform.ux.ArFragment
- import com.google.common.util.concurrent.ListenableFuture
- import kotlinx.android.synthetic.main.activity_main.*
- import kotlinx.coroutines.Dispatchers
- import kotlinx.coroutines.launch
- import org.tensorflow.lite.support.image.TensorImage
- import org.tensorflow.lite.support.label.Category
- import org.tensorflow.lite.support.model.Model
- import java.util.concurrent.ExecutorService
- import java.util.concurrent.Executors
- import kotlin.math.abs
- import kotlin.math.max
- import kotlin.math.min
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Matrix
+import android.media.Image
+import android.os.Bundle
+import android.util.DisplayMetrics
+import android.util.Log
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.camera.core.*
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+//import com.example.ta_mask_detection.common.AugmentedFaceFragment
+//import com.example.ta_mask_detection.common.AugmentedFaceListener
+//import com.example.ta_mask_detection.common.AugmentedFaceNode
+//import com.badlogic.gdx.ApplicationListener
+import com.example.ta_mask_detection.ml.FaceMaskDetection
+import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.label.Category
+import org.tensorflow.lite.support.model.Model
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
- typealias CameraBitmapOutputListener = (bitmap: Bitmap) -> Unit
+typealias CameraBitmapOutputListener = (bitmap: Bitmap) -> Unit
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private var cameraProvider: ProcessCameraProvider? = null
-    private var lensFacing: Int = CameraSelector.LENS_FACING_BACK
+    private var lensFacing: Int = CameraSelector.LENS_FACING_FRONT
     private var camera: Camera? = null
     private lateinit var cameraExecutor: ExecutorService
-    private val covidObj: ModelRenderable? = null
-    lateinit var arFragment: ArFragment
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_main)
-        
+
+//        (face_view as AugmentedFaceFragment).setAugmentedFaceListener(this)
 
         setupML()
         setupCameraThread()
-        setupCameraControllers()
+
 
         if(!allPermissionGranted){
             requireCameraPermission()
@@ -65,6 +67,26 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
             setupCamera()
         }
     }
+
+//    override fun onFaceAdded(face: AugmentedFaceNode) {
+//        face.setFaceMeshTexture("models/freckles.png")
+//        face.setRegionModel(
+//                AugmentedFaceNode.Companion.FaceLandmark.NOSE_TIP,
+//                "models/NOSE.obj",
+//                "models/nose_fur.png")
+//        face.setRegionModel(
+//                AugmentedFaceNode.Companion.FaceLandmark.FOREHEAD_LEFT,
+//                "models/FOREHEAD_LEFT.obj",
+//                "models/ear_fur.png")
+//        face.setRegionModel(
+//                AugmentedFaceNode.Companion.FaceLandmark.FOREHEAD_RIGHT,
+//                "models/FOREHEAD_RIGHT.obj",
+//                "models/ear_fur.png")
+//    }
+//
+//    override fun onFaceUpdate(face: AugmentedFaceNode) {
+//
+//    }
 
 
     private fun setupCameraUseCases()  //
@@ -122,63 +144,31 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
             cameraProvider = cameraProviderFuture.get()
 
             lensFacing = when {
-                hasFrontCamera -> CameraSelector.LENS_FACING_BACK
-                hasBackCamera -> CameraSelector.LENS_FACING_BACK
+                hasFrontCamera -> CameraSelector.LENS_FACING_FRONT
+                hasBackCamera -> CameraSelector.LENS_FACING_FRONT
                 else -> throw IllegalStateException("No cameras on this devices")
             }
 
-            setupCameraControllers()
             setupCameraUseCases()
         }, ContextCompat.getMainExecutor(this))
     }
 
     private val allPermissionGranted: Boolean
-    get(){
-        return REQUIRED_PERMISSIONS.all{
-            ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+        get(){
+            return REQUIRED_PERMISSIONS.all{
+                ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+            }
         }
-    }
 
     private val hasBackCamera: Boolean
-    get(){
-        return cameraProvider?.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) ?: false
-    }
+        get(){
+            return cameraProvider?.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) ?: false
+        }
 
     private val hasFrontCamera: Boolean
-    get(){
-        return cameraProvider?.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) ?: false
-    }
-
-    private fun setupCameraControllers()
-    {
-        fun setLensButtonIcon(){
-            btn_camera_lens_face.setImageDrawable(
-                AppCompatResources.getDrawable(
-                    applicationContext,
-                    if(lensFacing == CameraSelector.LENS_FACING_BACK)
-                        R.drawable.ic_baseline_camera_rear_24
-                else
-                        R.drawable.ic_baseline_camera_rear_24
-                )
-            )
+        get(){
+            return cameraProvider?.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) ?: false
         }
-        setLensButtonIcon()
-
-        btn_camera_lens_face.setOnClickListener{
-            lensFacing = if(CameraSelector.LENS_FACING_BACK==lensFacing){
-                CameraSelector.LENS_FACING_BACK
-            }else{
-                CameraSelector.LENS_FACING_BACK
-            }
-            setLensButtonIcon()
-            setupCameraUseCases()
-        }
-        try {
-            btn_camera_lens_face.isEnabled = hasBackCamera && hasFrontCamera
-        }catch (exception: CameraInfoUnavailableException){
-            btn_camera_lens_face.isEnabled = false
-        }
-    }
 
     private fun setupCameraThread()
     {
@@ -200,9 +190,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<out String>,
+            grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         grantedCameraPermission(requestCode)
@@ -210,7 +200,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        setupCameraControllers()
+
     }
 
     private lateinit var faceMaskDetection: FaceMaskDetection
@@ -221,7 +211,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         faceMaskDetection = FaceMaskDetection.newInstance(applicationContext, options)
     }
 
-//    @SuppressLint("UseCompatLoadingForDrawables")
     private fun setupMLOutput(bitmap: Bitmap) {
         val tensorImage: TensorImage = TensorImage.fromBitmap(bitmap)
         val result: FaceMaskDetection.Outputs = faceMaskDetection.process(tensorImage)
@@ -233,15 +222,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
                 category ->
                 tv_output.text = category.label
                 tv_output.setTextColor(
-                        ContextCompat.getColor(
-                                applicationContext,
+                        ContextCompat.getColor(applicationContext,
                                 if(category.label=="without_mask") R.color.red else R.color.green
-                        //show 3d model
+                                //show 3d model
                         )
                 )
-                overlay.background = getDrawable(
-                        if (category.label == "without_mask") R.drawable.without_mask_border else R.drawable.with_mask_border
+                overlay.background=getDrawable(
+                        if (category.label=="without_mask")R.drawable.without_mask_border else R.drawable.with_mask_border
                 )
+
                 pb_output.progressTintList = AppCompatResources.getColorStateList(
                         applicationContext,
                         if(category.label == "without_mask") R.color.red else R.color.green
@@ -262,6 +251,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     }
 
     companion object{
+//        enum class FaceLandmark{
+//            FOREHEAD_LEFT,
+//            FOREHEAD_RIGHT,
+//            NOSE_TIP
+//        }
+
         private const val TAG = "face_mask_detection"
         private const val REQUEST_CODE_PERMISSIONS = 0x98
         private val REQUIRED_PERMISSIONS:Array<String> = arrayOf(Manifest.permission.CAMERA)
@@ -269,41 +264,39 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         private const val RATIO_16_9_VALUE: Double = 16.0/9.0
     }
 
+
 }
 
- private class BitmapOutPutAnalysis(
-     context: Context,
-     private val listener: CameraBitmapOutputListener
- ):
-         ImageAnalysis.Analyzer{
-     private val yuvToRGBConverter = YuvToRGBConverter(context)
-     private lateinit var bitmapBuffer: Bitmap
-     private lateinit var rotationMatrix: Matrix
+private class BitmapOutPutAnalysis(context: Context, private val listener: CameraBitmapOutputListener):
+        ImageAnalysis.Analyzer{
+    private val yuvToRGBConverter = YuvToRGBConverter(context)
+    private lateinit var bitmapBuffer: Bitmap
+    private lateinit var rotationMatrix: Matrix
 
-     @SuppressLint("UnsafeExperimentalUsageError")
-     private fun ImageProxy.toBitmap(): Bitmap?{
-         val image: Image = this.image?:return null
-         if(!::bitmapBuffer.isInitialized){
-             rotationMatrix = Matrix()
-             rotationMatrix.postRotate(this.imageInfo.rotationDegrees.toFloat())
-             bitmapBuffer = Bitmap.createBitmap(this.width, this.height, Bitmap.Config.ARGB_8888)
-         }
-         yuvToRGBConverter.yuvToRGB(image,bitmapBuffer)
-         return Bitmap.createBitmap(
-             bitmapBuffer,
-             0,
-             0,
-             bitmapBuffer.width,
-             bitmapBuffer.height,
-             rotationMatrix,
-             false
-         )
-     }
+    @SuppressLint("UnsafeExperimentalUsageError")
+    private fun ImageProxy.toBitmap(): Bitmap?{
+        val image: Image = this.image?:return null
+        if(!::bitmapBuffer.isInitialized){
+            rotationMatrix = Matrix()
+            rotationMatrix.postRotate(this.imageInfo.rotationDegrees.toFloat())
+            bitmapBuffer = Bitmap.createBitmap(this.width, this.height, Bitmap.Config.ARGB_8888)
+        }
+        yuvToRGBConverter.yuvToRGB(image,bitmapBuffer)
+        return Bitmap.createBitmap(
+                bitmapBuffer,
+                0,
+                0,
+                bitmapBuffer.width,
+                bitmapBuffer.height,
+                rotationMatrix,
+                false
+        )
+    }
 
-     override fun analyze(image: ImageProxy) {
-         image.toBitmap()?.let{  //imageProxy
-             listener(it)
-         }
-         image.close()
-     }
- }
+    override fun analyze(image: ImageProxy) {
+        image.toBitmap()?.let{  //imageProxy
+            listener(it)
+        }
+        image.close()
+    }
+}
