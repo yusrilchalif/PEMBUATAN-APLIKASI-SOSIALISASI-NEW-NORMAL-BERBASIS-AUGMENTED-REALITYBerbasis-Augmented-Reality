@@ -19,10 +19,9 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-//import com.example.ta_mask_detection.common.AugmentedFaceFragment
-//import com.example.ta_mask_detection.common.AugmentedFaceListener
-//import com.example.ta_mask_detection.common.AugmentedFaceNode
-//import com.badlogic.gdx.ApplicationListener
+import com.example.ta_mask_detection.common.AugmentedFaceFragment
+import com.example.ta_mask_detection.common.AugmentedFaceListener
+import com.example.ta_mask_detection.common.AugmentedFaceNode
 import com.example.ta_mask_detection.ml.FaceMaskDetection
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.android.synthetic.main.activity_main.*
@@ -48,8 +47,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     private var camera: Camera? = null
     private lateinit var cameraExecutor: ExecutorService
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -57,7 +54,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
         setupML()
         setupCameraThread()
-
 
         if(!allPermissionGranted){
             requireCameraPermission()
@@ -228,7 +224,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
                         )
                 )
                 overlay.background=getDrawable(
-                        if (category.label=="without_mask")R.drawable.without_mask_border else R.drawable.with_mask_border
+                        if (category.label=="without_mask")
+                            R.drawable.without_mask_border
+                        else
+                            R.drawable.with_mask_border
                 )
 
                 pb_output.progressTintList = AppCompatResources.getColorStateList(
@@ -251,11 +250,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
     }
 
     companion object{
-//        enum class FaceLandmark{
-//            FOREHEAD_LEFT,
-//            FOREHEAD_RIGHT,
-//            NOSE_TIP
-//        }
+        enum class FaceLandmark{
+            FOREHEAD_LEFT,
+            FOREHEAD_RIGHT,
+            NOSE_TIP
+        }
 
         private const val TAG = "face_mask_detection"
         private const val REQUEST_CODE_PERMISSIONS = 0x98

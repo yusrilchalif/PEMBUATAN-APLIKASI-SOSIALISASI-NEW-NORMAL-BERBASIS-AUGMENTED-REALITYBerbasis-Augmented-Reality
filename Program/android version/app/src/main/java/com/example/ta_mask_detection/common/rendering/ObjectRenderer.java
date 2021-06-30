@@ -7,9 +7,6 @@ import android.graphics.Shader;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
-
-import org.rajawali3d.materials.textures.Texture;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;

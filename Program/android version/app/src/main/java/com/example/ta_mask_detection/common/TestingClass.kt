@@ -13,19 +13,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.core.app.ActivityCompat.checkSelfPermission
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.ta_mask_detection.R
 import com.example.ta_mask_detection.common.helpers.DisplayRotationHelper
 import com.example.ta_mask_detection.common.helpers.SnackbarHelper
 import com.example.ta_mask_detection.common.helpers.TrackingStateHelper
 import com.example.ta_mask_detection.common.rendering.BackgroundRenderer
-import com.example.ta_mask_detection.R
 import com.google.ar.core.*
-import com.google.ar.core.ArCoreApk.InstallStatus
-import com.google.ar.core.Session.Feature
 import com.google.ar.core.exceptions.*
-import kotlinx.android.synthetic.main.fragment_augmented_face.*
 import java.io.IOException
 import java.util.*
 import javax.microedition.khronos.egl.EGLConfig
@@ -33,7 +30,7 @@ import javax.microedition.khronos.opengles.GL10
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-class AugmentedFaceFragment : Fragment(), GLSurfaceView.Renderer {
+class TestingClass: Fragment(), GLSurfaceView.Renderer {
     private var session: Session? = null
     private var frameLayout: FrameLayout? = null
     private var surfaceView: GLSurfaceView? = null
@@ -83,11 +80,11 @@ class AugmentedFaceFragment : Fragment(), GLSurfaceView.Renderer {
                 val installStatus = ArCoreApk.getInstance().requestInstall(requireActivity(), !installRequest)
 
                 when(installStatus){
-                    InstallStatus.INSTALL_REQUESTED -> {
+                    ArCoreApk.InstallStatus.INSTALL_REQUESTED -> {
                         installRequest = true
                         return
                     }
-                    InstallStatus.INSTALLED -> {
+                    ArCoreApk.InstallStatus.INSTALLED -> {
                     }
                     else -> {
                         println("Undefined Install status")
@@ -96,8 +93,8 @@ class AugmentedFaceFragment : Fragment(), GLSurfaceView.Renderer {
 
                 if (ContextCompat.checkSelfPermission(requireActivity(), "android.permission.CAMERA") == PackageManager.PERMISSION_GRANTED) {
                     // Configure session to use front facing camera.
-                    val featureSet: EnumSet<Feature> =
-                            EnumSet.of(Feature.FRONT_CAMERA)
+                    val featureSet: EnumSet<Session.Feature> =
+                            EnumSet.of(Session.Feature.FRONT_CAMERA)
                     // Create the session.
                     session = Session( /* context= */context, featureSet)
 //                    configureSession()
@@ -152,13 +149,13 @@ class AugmentedFaceFragment : Fragment(), GLSurfaceView.Renderer {
         val additionalPermission: ArrayList<String> = ArrayList()
         val permissionLength = additionalPermission.size
         for(i in 0 until permissionLength){
-            if (checkSelfPermission(requireActivity(), additionalPermission[i]) != PackageManager.PERMISSION_GRANTED){
+            if (ActivityCompat.checkSelfPermission(requireActivity(), additionalPermission[i]) != PackageManager.PERMISSION_GRANTED){
                 permission.add(additionalPermission[i])
             }
         }
 
 //        check camera permission
-        if(checkSelfPermission(requireContext(), Manifest.permission.CAMERA)!=PackageManager.PERMISSION_GRANTED){
+        if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
             permission.add(Manifest.permission.CAMERA)
         }
 
@@ -180,7 +177,7 @@ class AugmentedFaceFragment : Fragment(), GLSurfaceView.Renderer {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (checkSelfPermission(requireActivity(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             return
         }
 
@@ -210,23 +207,23 @@ class AugmentedFaceFragment : Fragment(), GLSurfaceView.Renderer {
                     }
                 }
                 .show()
-        }
+    }
 
-        override fun onPause() {
-            super.onPause()
-            if (session != null) {
-                displayRotationHelper.onPause()
-                surfaceView?.onPause()
-                session?.pause()
-            }
+    override fun onPause() {
+        super.onPause()
+        if (session != null) {
+            displayRotationHelper.onPause()
+            surfaceView?.onPause()
+            session?.pause()
         }
+    }
 
-        override fun onDestroy(){
-            if(session!=null){
-                session?.close()
-                session=null
+    override fun onDestroy(){
+        if(session!=null){
+            session?.close()
+            session=null
         }
-            super.onDestroy()
+        super.onDestroy()
     }
 
     override fun onDrawFrame(gl: GL10?) {
