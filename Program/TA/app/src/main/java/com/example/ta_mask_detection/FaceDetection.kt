@@ -26,6 +26,8 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.example.ta_mask_detection.ml.FaceMaskDetection
 import kotlinx.android.synthetic.main.activity_face_detection.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.label.Category

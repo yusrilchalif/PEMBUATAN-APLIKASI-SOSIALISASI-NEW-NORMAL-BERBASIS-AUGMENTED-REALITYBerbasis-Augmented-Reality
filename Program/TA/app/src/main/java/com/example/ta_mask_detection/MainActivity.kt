@@ -10,6 +10,10 @@ import com.example.ta_mask_detection.common.AugmentedFaceFragment
 import com.example.ta_mask_detection.common.AugmentedFaceListener
 import com.example.ta_mask_detection.common.AugmentedFaceNode
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), AugmentedFaceListener {
 
@@ -22,8 +26,11 @@ class MainActivity : AppCompatActivity(), AugmentedFaceListener {
 
         val button: ImageButton = findViewById(R.id.btnBack)
         button.setOnClickListener {
-            val intent = Intent(this, FaceDetection::class.java)
-            startActivity(intent)
+            GlobalScope.launch(Dispatchers.Main){
+                delay(2000L)
+                startActivity(Intent(this@MainActivity, FaceDetection::class.java))
+                finish()
+            }
         }
     }
 
