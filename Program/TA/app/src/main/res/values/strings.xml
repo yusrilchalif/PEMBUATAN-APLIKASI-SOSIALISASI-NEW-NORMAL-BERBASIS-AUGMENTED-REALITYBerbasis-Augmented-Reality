@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">AR Mask Detection</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+    <string name="skip">Skip</string>
+    <string name="slide_one_title">Ini text</string>
+    <string name="slide_one_des">Ini text</string>
+    <string name="slide_two_title">Ini text</string>
+    <string name="slide_two_des">Ini text</string>
+    <string name="slide_three_title">Ini text</string>
+    <string name="slide_three_des">Ini text</string>
+    <string name="slide_four_title">Ini text</string>
+    <string name="slide_four_des">Ini text</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

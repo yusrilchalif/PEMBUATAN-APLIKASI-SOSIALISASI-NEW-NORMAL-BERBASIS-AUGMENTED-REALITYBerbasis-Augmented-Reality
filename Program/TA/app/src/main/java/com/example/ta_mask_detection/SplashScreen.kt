@@ -1,47 +1,35 @@
 package com.example.ta_mask_detection
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
-import android.widget.ProgressBar
-import android.widget.TextView
-import java.util.*
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_splash_screen.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 class SplashScreen : AppCompatActivity() {
-    private var timer: Timer? = null
-    private var progressBar: ProgressBar? = null
-    private var i = 0
-    var textView: TextView? = null
+
+    private val btnSkip: Button? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
 
-        getActionBar()?.hide();
+        val btnSkip: Button = findViewById(R.id.btn_skip);
 
-        progressBar = findViewById<View>(R.id.progressBar) as ProgressBar
-        progressBar!!.progress = 0
-        textView = findViewById<View?>(R.id.textView) as TextView
-        textView!!.text = ""
-        val period: Long = 100
-        timer = Timer()
-        timer!!.schedule(object : TimerTask() {
-            override fun run() {
-                if(i < 100)
-                {
-                    runOnUiThread { textView!!.text = "Loading $i%" }
-                    progressBar!!.progress = i
-                    i++
-                }
-                else
-                {
-                    timer!!.cancel()
-                    val intent = Intent(this@SplashScreen, FaceDetection::class.java)
-                    startActivity(intent)
-                    finish()
-                }
+        viewPager.adapter = ViewPageAdapter(supportFragmentManager)
+
+        btnSkip.setOnClickListener {
+            GlobalScope.launch(Dispatchers.Main) {
+                delay(2000L)
+                startActivity(Intent(this@SplashScreen, MainMenu::class.java))
+                finish()
             }
-        }, 0, period)
+        }
+
     }
 }

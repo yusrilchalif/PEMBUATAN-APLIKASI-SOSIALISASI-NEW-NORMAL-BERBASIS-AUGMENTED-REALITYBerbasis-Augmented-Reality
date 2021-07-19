@@ -27,8 +27,9 @@ class MainActivity : AppCompatActivity(), AugmentedFaceListener {
         val button: ImageButton = findViewById(R.id.btnBack)
         button.setOnClickListener {
             GlobalScope.launch(Dispatchers.Main){
-                delay(2000L)
-                startActivity(Intent(this@MainActivity, FaceDetection::class.java))
+                delay(500L)
+                startActivity(Intent(this@MainActivity, MainMenu::class.java))
+                mediaPlayer!!.stop()
                 finish()
             }
         }
