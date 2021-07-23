@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/face_view"
-        android:name="com.example.ta_mask_detection.common.AugmentedFaceFragment"
+        android:name="com.YusrilChalif.ta_mask_detection.common.AugmentedFaceFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="top"

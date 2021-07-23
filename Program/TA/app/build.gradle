@@ -10,7 +10,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "com.example.ta_mask_detection"
+        applicationId "com.YusrilChalif.ta_mask_detection"
         minSdkVersion 25
         targetSdkVersion 30
         versionCode 1

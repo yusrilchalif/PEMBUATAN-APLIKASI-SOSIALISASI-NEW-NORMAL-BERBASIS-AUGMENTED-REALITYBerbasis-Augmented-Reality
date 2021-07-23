@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.ta_mask_detection">
+    package="com.YusrilChalif.ta_mask_detection"
+    android:versionCode="1"
+    android:versionName="1.0">
 
     <uses-permission android:name="android.permission.CAMERA" />
 
@@ -19,13 +21,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Design.NoActionBar">
 
-        <activity android:name=".MainMenu" />
+        <activity android:name="com.YusrilChalif.ta_mask_detection.MainMenu" />
         <activity
-            android:name=".MainActivity"
+            android:name="com.YusrilChalif.ta_mask_detection.MainActivity"
             android:noHistory="true" />
-        <activity android:name=".FaceDetection" />
-        <activity android:name=".Credit" />
-        <activity android:name=".SplashScreen">
+        <activity android:name="com.YusrilChalif.ta_mask_detection.FaceDetection" />
+        <activity android:name="com.YusrilChalif.ta_mask_detection.Credit" />
+        <activity android:name="com.YusrilChalif.ta_mask_detection.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
